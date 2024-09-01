@@ -15,6 +15,7 @@ import cmd
 import json
 import os
 import subprocess
+from datetime import datetime
 
 DATA_FILE = 'containers.json'
 
@@ -36,8 +37,20 @@ class DevToolCLI(cmd.Cmd):
         with open(DATA_FILE, 'w') as file:
             json.dump(self.data, file, indent=4)
 
+    def add_container(self, container_name, workspace):
+        if container_name in self.data:
+            print(f"Error: Container \"{container_name}\" already exists in store.")
+            return
+
+        self.data[container_name] = {
+            'workspace': workspace,
+            'last_updated': datetime.now().isoformat()  # Add the current timestamp
+        }
+        self.save_data()
+        print(f"Container added: {container_name} with code workspace: {workspace}")
+
     def do_add(self, arg):
-        'Add a Docker container name and it\'s codes location on the local machine: add CONTAINER_NAME LOCATION'
+        'Add a Docker container name and it\'s codes workspace on the local machine: add'
         # args = arg.split(maxsplit=1)
 
         container_name = input("Enter the Docker container name: ").strip()
@@ -45,19 +58,13 @@ class DevToolCLI(cmd.Cmd):
             print("Error: Container name cannot be empty.")
             return
 
-        # Prompt the user for the location
-        location = input("Enter the location of the code on the local machine: ").strip()
-        if not location:
-            print("Error: Location cannot be empty.")
+        # Prompt the user for the workspace
+        workspace = input("Enter the path to the code workspace: ").strip()
+        if not workspace:
+            print("Error: workspace cannot be empty.")
             return
         
-        if container_name in self.data:
-            print(f"Error: Container \"{container_name}\" already exists in store.")
-            return
-
-        self.data[container_name] = location
-        self.save_data()
-        print(f"Container added: {container_name} with code location: {location}")
+        self.add_container(container_name, workspace)
 
     def container_exists(self, container_name):
         result = subprocess.run(['docker', 'ps', '-a', '--format', '{{.Names}}'], capture_output=True, text=True)
@@ -83,20 +90,25 @@ class DevToolCLI(cmd.Cmd):
             return "Unknown"
 
     def do_list(self, arg):
-        'List all stored container names and the locations of their code on the local machine: list'
+        'List all stored container names and the workspaces of their code on the local machine: list'
 
         print("\nStored containers:")
         print("==================")
-        print(f"{'Container Name':<40} {'Code Location':<60} {'Status':<10}")
-        print(f"{'-'*40} {'-'*60} {'-'*10}")
+        print(f"{'Container Name':<40} {'Code workspace':<60} {'Status':<10} {'Last Updated':<20}")
+        print(f"{'-'*40} {'-'*60} {'-'*10} {'-'*20}")
         
-        for container_name, location in self.data.items():
-            print(f"{container_name:<40} {location:<60} ({self.check_container(container_name)})")
+        for container_name, info in self.data.items():
+            workspace = info.get('workspace', '-')
+            status = self.check_container(container_name)
+            last_updated = (datetime.now() - datetime.fromisoformat(info.get('last_updated', '-'))).total_seconds() / 60
+
+            updated = f"{int(last_updated)} minutes ago" if last_updated >= 1 else "Just now"
+            print(f"{container_name:<40} {workspace:<60} {status:<10} {updated:<20}")
         
         print("\n")
 
     def do_ls(self, arg):
-        'List all stored container names and the locations of their code on the local machine: ls'
+        'List all stored container names and the workspaces of their code on the local machine: ls'
         self.do_list(arg)
         
 
@@ -129,25 +141,32 @@ class DevToolCLI(cmd.Cmd):
         print('Exiting...')
         return True
     
-    def copy_files(self, container_name, location):
+    def copy_files(self, container_name, workspace):
         try:
-            print(f"Copying files from {location} to {container_name}...")
+            print(f"Copying files from {workspace} to {container_name}...")
 
             # Expand tilde to the full home directory path if present
-            location = os.path.expanduser(location)
+            workspace = os.path.expanduser(workspace)
 
-            if not os.path.exists(location):
-                print(f"Error: Location \"{location}\" does not exist.")
+            if not os.path.exists(workspace):
+                print(f"Error: workspace \"{workspace}\" does not exist.")
                 return
             if not self.container_exists(container_name):
                 print(f"Error: Container \"{container_name}\" does not exist.")
                 return
             
-            subprocess.run(['docker', 'cp', f'{location}/.', f'{container_name}:/app'], check=True)
+            subprocess.run(['docker', 'cp', f'{workspace}/.', f'{container_name}:/app'], check=True)
         except subprocess.CalledProcessError as e:
             print(f"Error occurred while copying files: {e}")
         except Exception as e:
             print(f"An unexpected error occurred: {e}")
+
+    def update_timestamp(self, container_name):
+        if container_name in self.data:
+            self.data[container_name]['last_updated'] = datetime.now().isoformat()
+            self.save_data()
+        else:
+            print(f"Error: Container \"{container_name}\" does not exist in ServiceGenie storage.")
     
     def do_r(self, arg):
         'Replace a container\'s code: r || r CONTAINER_NAME_ONE, CONTAINER_NAME_TWO, ...'
@@ -157,16 +176,20 @@ class DevToolCLI(cmd.Cmd):
         
         if not arg:
             print("Replacing all container's code...")
-            for container_name, location in self.data.items():
-                print(f"Replacing container: {container_name} with code location: {location}")
-                self.copy_files(container_name, location)
+            for container_name, info in self.data.items():
+                workspace = info.get('workspace', '-')
+                print(f"Replacing container: {container_name} with code workspace: {workspace}")
+                self.copy_files(container_name, workspace)
+                self.update_timestamp(container_name)
         else:
             containers = arg.split(',')
             for container_name in containers:
                 container_name = container_name.strip()
                 if container_name in self.data:
-                    print(f"Replacing container: {container_name}")
-                    self.copy_files(container_name, self.data[container_name])
+                    workspace = self.data[container_name]['workspace']
+                    print(f"Replacing container: {container_name} with code workspace: {workspace}")
+                    self.copy_files(container_name, workspace)
+                    self.update_timestamp(container_name)
                 else:
                     print(f"Error: Container \"{container_name}\" does not exist in ServiceGenie storage.")
 
