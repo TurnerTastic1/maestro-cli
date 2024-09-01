@@ -3,6 +3,8 @@
 # Activate virtual environment
 source venv/bin/activate
 
+pip install -r requirements.txt
+
 # Run PyInstaller with your spec file
 pyinstaller --onefile servicegenie/main.py --name ServiceGenie
 

@@ -59,25 +59,55 @@ class DevToolCLI(cmd.Cmd):
         self.save_data()
         print(f"Container added: {container_name} with code location: {location}")
 
-    def do_store(self, arg):
-        'List all stored container names and the locations of their code on the local machine: store'
+    def container_exists(self, container_name):
+        result = subprocess.run(['docker', 'ps', '-a', '--format', '{{.Names}}'], capture_output=True, text=True)
+        return container_name in result.stdout.split()
+
+    def check_container(self, container_name):
+        try:
+            if not self.container_exists(container_name):
+                return "Unknown"
+
+            # Get container status using `docker inspect`
+            result = subprocess.run(
+                ['docker', 'inspect', '--format', '{{.State.Status}}', container_name],
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+            status = result.stdout.strip()
+            return status
+
+        except subprocess.CalledProcessError as e:
+            return "Unknown"
+
+    def do_list(self, arg):
+        'List all stored container names and the locations of their code on the local machine: list'
 
         print("\nStored containers:")
         print("==================")
-        print(f"{'Container Name':<20} {'Code Location'}")
-        print(f"{'-'*20} {'-'*50}")
+        print(f"{'Container Name':<40} {'Code Location':<60} {'Status':<10}")
+        print(f"{'-'*40} {'-'*60} {'-'*10}")
         
         for container_name, location in self.data.items():
-            print(f"{container_name:<20} {location}")
+            print(f"{container_name:<40} {location:<60} ({self.check_container(container_name)})")
         
         print("\n")
 
+    def do_ls(self, arg):
+        'List all stored container names and the locations of their code on the local machine: ls'
+        self.do_list(arg)
+        
+
     def do_remove(self, arg):
         'Remove a stored Docker container\'s data: remove CONTAINER_NAME'
-        container_name = arg.strip()
+
+        container_name = input("Enter the Docker container name: ").strip()
         if not container_name:
             print("Error: Container name cannot be empty.")
             return
+        
         if container_name in self.data:
             del self.data[container_name]
             self.save_data()
@@ -98,10 +128,6 @@ class DevToolCLI(cmd.Cmd):
         'Exit the CLI'
         print('Exiting...')
         return True
-    
-    def container_exists(self, container_name):
-        result = subprocess.run(['docker', 'ps', '-a', '--format', '{{.Names}}'], capture_output=True, text=True)
-        return container_name in result.stdout.split()
     
     def copy_files(self, container_name, location):
         try:
@@ -140,9 +166,9 @@ class DevToolCLI(cmd.Cmd):
                 container_name = container_name.strip()
                 if container_name in self.data:
                     print(f"Replacing container: {container_name}")
+                    self.copy_files(container_name, self.data[container_name])
                 else:
                     print(f"Error: Container \"{container_name}\" does not exist in ServiceGenie storage.")
-
 
 if __name__ == '__main__':
     DevToolCLI().cmdloop()
