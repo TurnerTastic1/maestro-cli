@@ -1,0 +1,15 @@
+# Ignore Python bytecode files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ignore virtual environment directory
+venv/
+
+# Ignore PyInstaller build directory
+/build/
+dist/
+*.spec
+
+# Ignore environment configuration files
+.env

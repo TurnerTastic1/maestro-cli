@@ -15,13 +15,12 @@ import cmd
 import json
 import os
 import subprocess
-import sys
 
 DATA_FILE = 'containers.json'
 
 class DevToolCLI(cmd.Cmd):
     intro = 'Welcome to the DevTool CLI. Type help or ? to list commands.\n'
-    prompt = '(devtool) '
+    prompt = '\033[95m(ServiceGenie)\033[0m '
 
     def __init__(self):
         super().__init__()
@@ -39,41 +38,39 @@ class DevToolCLI(cmd.Cmd):
 
     def do_add(self, arg):
         'Add a Docker container name and it\'s codes location on the local machine: add CONTAINER_NAME LOCATION'
-        args = arg.split(maxsplit=1)
-        
-        if len(args) != 2:
-            print("Error: You must provide both a container name and a location.")
-            return
-        
-        container_name, location = args
-        
-        if not container_name.strip():
+        # args = arg.split(maxsplit=1)
+
+        container_name = input("Enter the Docker container name: ").strip()
+        if not container_name:
             print("Error: Container name cannot be empty.")
             return
-        
-        if not location.strip():
+
+        # Prompt the user for the location
+        location = input("Enter the location of the code on the local machine: ").strip()
+        if not location:
             print("Error: Location cannot be empty.")
             return
         
         if container_name in self.data:
-            print(f"Error: Container \"{container_name}\" already exists.")
+            print(f"Error: Container \"{container_name}\" already exists in store.")
             return
 
         self.data[container_name] = location
         self.save_data()
         print(f"Container added: {container_name} with code location: {location}")
 
-    def do_list(self, arg):
-        'List all stored container names and the locations of their code on the local machine: list'
-        if not self.data:
-            print("No containers stored.")
-            return
-        
-        print("Stored containers:")
+    def do_store(self, arg):
+        'List all stored container names and the locations of their code on the local machine: store'
+
+        print("\nStored containers:")
         print("==================")
-        print("Container Name: Code Location")
-        for container_name, value in self.data.items():
-            print(f"{container_name} with code location: {value}")
+        print(f"{'Container Name':<20} {'Code Location'}")
+        print(f"{'-'*20} {'-'*50}")
+        
+        for container_name, location in self.data.items():
+            print(f"{container_name:<20} {location}")
+        
+        print("\n")
 
     def do_remove(self, arg):
         'Remove a stored Docker container\'s data: remove CONTAINER_NAME'
