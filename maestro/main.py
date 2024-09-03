@@ -18,10 +18,10 @@ import subprocess
 from datetime import datetime
 
 DATA_FILE = 'MaestroConfig.json'
-
+#! ADD CHECKS FOR TIME STAMPS! DOES NOT WORK ON CONFIGURE!
 class Maestro(cmd.Cmd):
     intro = 'Welcome to the Maestro CLI. Type help or ? to list commands.\n'
-    prompt = '\033[95m(Maestro)\033[0m '
+    prompt = '\033[95mMaestro>\033[0m '
 
     def __init__(self, data_file=DATA_FILE):
         super().__init__()
