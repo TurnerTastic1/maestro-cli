@@ -1,4 +1,6 @@
-# ServiceGenie
+# Maestro
+
+![Maestro DevTool](images/maestro.png)
 
 ## Overview
 
