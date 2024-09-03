@@ -38,10 +38,10 @@ Maestro> ls
 
 Stored containers:
 ==================
-Container Name       Code Location                                    Status      Last Updated
--------------------  -----------------------------------------------  ----------  --------------------
-my_container         ~/projects/my_code                               (running)   5 minutes ago
-another_container    ~/workspace/another_project                      (stopped)   2 hours ago
+Container Name       Code Location                                   Status      Last Updated
+-------------------  ----------------------------------------------  ----------  --------------------
+my_container         ~/projects/my_code                              (running)   5 minutes ago
+another_container    ~/workspace/another_project                     (stopped)   2 hours ago
 
 Maestro>
 ```
