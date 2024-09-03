@@ -168,17 +168,17 @@ class DevToolCLI(cmd.Cmd):
         else:
             print(f"Error: Container \"{container_name}\" does not exist in ServiceGenie storage.")
     
-    def do_r(self, arg):
-        'Replace a container\'s code: r || r CONTAINER_NAME_ONE, CONTAINER_NAME_TWO, ...'
+    def do_copy(self, arg):
+        'Copy a container\'s code: copy || copy CONTAINER_NAME_ONE, CONTAINER_NAME_TWO, ...'
         if not self.data:
             print("No containers stored.")
             return
         
         if not arg:
-            print("Replacing all container's code...")
+            print("Copying all container's code...")
             for container_name, info in self.data.items():
                 workspace = info.get('workspace', '-')
-                print(f"Replacing container: {container_name} with code workspace: {workspace}")
+                print(f"Copying code to container: {container_name} with code workspace: {workspace}")
                 self.copy_files(container_name, workspace)
                 self.update_timestamp(container_name)
         else:
@@ -187,11 +187,15 @@ class DevToolCLI(cmd.Cmd):
                 container_name = container_name.strip()
                 if container_name in self.data:
                     workspace = self.data[container_name]['workspace']
-                    print(f"Replacing container: {container_name} with code workspace: {workspace}")
+                    print(f"Copying code to container: {container_name} with code workspace: {workspace}")
                     self.copy_files(container_name, workspace)
                     self.update_timestamp(container_name)
                 else:
                     print(f"Error: Container \"{container_name}\" does not exist in ServiceGenie storage.")
+
+    def do_c(self, args):
+        'Copy a container\'s code: copy || copy CONTAINER_NAME_ONE, CONTAINER_NAME_TWO, ...'
+        self.do_copy(args)
 
 if __name__ == '__main__':
     DevToolCLI().cmdloop()
