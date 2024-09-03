@@ -1,6 +1,5 @@
 # Maestro
 
-![Maestro CLI](images/maestro.png)
 <img src="images/maestro.png" alt="Maestro CLI" width="400" />
 
 ## Overview
