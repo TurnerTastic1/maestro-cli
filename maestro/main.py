@@ -1,5 +1,5 @@
 """
-ServiceGenie CLI - A Docker Compose Helper for Microservices
+Maestro CLI - A command-line interface for managing Docker containers in a microservices environment.
 
 This script provides a command-line interface (CLI) for managing Docker containers
 in a microservices environment. It allows users to ...
@@ -17,11 +17,11 @@ import os
 import subprocess
 from datetime import datetime
 
-DATA_FILE = 'ServiceGenieConfig.json'
+DATA_FILE = 'MaestroConfig.json'
 
-class ServiceGenie(cmd.Cmd):
-    intro = 'Welcome to the ServiceGenie CLI. Type help or ? to list commands.\n'
-    prompt = '\033[95m(ServiceGenie)\033[0m '
+class Maestro(cmd.Cmd):
+    intro = 'Welcome to the Maestro CLI. Type help or ? to list commands.\n'
+    prompt = '\033[95m(Maestro)\033[0m '
 
     def __init__(self, data_file=DATA_FILE):
         super().__init__()
@@ -245,4 +245,4 @@ class ServiceGenie(cmd.Cmd):
         self.do_copy(args)
 
 if __name__ == '__main__':
-    ServiceGenie().cmdloop()
+    Maestro().cmdloop()
