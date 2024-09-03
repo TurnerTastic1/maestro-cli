@@ -19,8 +19,8 @@ from datetime import datetime
 
 DATA_FILE = 'containers.json'
 
-class DevToolCLI(cmd.Cmd):
-    intro = 'Welcome to the DevTool CLI. Type help or ? to list commands.\n'
+class ServiceGenie(cmd.Cmd):
+    intro = 'Welcome to the ServiceGenie CLI. Type help or ? to list commands.\n'
     prompt = '\033[95m(ServiceGenie)\033[0m '
 
     def __init__(self):
@@ -92,6 +92,10 @@ class DevToolCLI(cmd.Cmd):
     def do_list(self, arg):
         'List all stored container names and the workspaces of their code on the local machine: list'
 
+        if not self.data:
+            print("No containers are being tracked.")
+            return
+
         print("\nStored containers:")
         print("==================")
         print(f"{'Container Name':<40} {'Code workspace':<60} {'Status':<10} {'Last Updated':<20}")
@@ -112,8 +116,16 @@ class DevToolCLI(cmd.Cmd):
         self.do_list(arg)
         
 
-    def do_remove(self, arg):
-        'Remove a stored Docker container\'s data: remove CONTAINER_NAME'
+    def do_rm(self, arg):
+        'Remove a stored Docker container\'s data: rm CONTAINER_NAME || rm -a'
+
+        if not self.data:
+            print("No containers are being tracked.")
+            return
+
+        if arg == '-a':
+            self.remove_all(arg)
+            return
 
         container_name = input("Enter the Docker container name: ").strip()
         if not container_name:
@@ -127,12 +139,11 @@ class DevToolCLI(cmd.Cmd):
         else:
             print(f"Error: Container \"{container_name}\" does not exist.")
 
-    def do_remove_all(self, arg):
-        'Remove all stored Docker container data: remove_all'
-        if not self.data:
-            print("No containers stored.")
-            return
-        
+    def do_remove(self, arg):
+        'Remove a stored Docker container\'s data: remove CONTAINER_NAME || remove -a'
+        self.do_rm(arg)
+
+    def remove_all(self, arg):
         response = input("Remove all stored container data? (y/n): ")
         if response.lower() != 'y':
             print("Operation cancelled.")
@@ -145,13 +156,10 @@ class DevToolCLI(cmd.Cmd):
 
     def do_exit(self, arg):
         'Exit the CLI'
-        print('Exiting...')
         return True
     
     def copy_files(self, container_name, workspace):
         try:
-            print(f"Copying files from {workspace} to {container_name}...")
-
             # Expand tilde to the full home directory path if present
             workspace = os.path.expanduser(workspace)
 
@@ -178,14 +186,14 @@ class DevToolCLI(cmd.Cmd):
     def do_copy(self, arg):
         'Copy a container\'s code: copy || copy CONTAINER_NAME_ONE, CONTAINER_NAME_TWO, ...'
         if not self.data:
-            print("No containers stored.")
+            print("No containers are being tracked.")
             return
         
         if not arg:
             print("Copying all container's code...")
             for container_name, info in self.data.items():
                 workspace = info.get('workspace', '-')
-                print(f"Copying code to container: {container_name} with code workspace: {workspace}")
+                print(f"Copying code to container: {container_name} from code workspace: {workspace}")
                 self.copy_files(container_name, workspace)
                 self.update_timestamp(container_name)
         else:
@@ -194,7 +202,7 @@ class DevToolCLI(cmd.Cmd):
                 container_name = container_name.strip()
                 if container_name in self.data:
                     workspace = self.data[container_name]['workspace']
-                    print(f"Copying code to container: {container_name} with code workspace: {workspace}")
+                    print(f"Copying code to container: {container_name} from code workspace: {workspace}")
                     self.copy_files(container_name, workspace)
                     self.update_timestamp(container_name)
                 else:
@@ -205,4 +213,4 @@ class DevToolCLI(cmd.Cmd):
         self.do_copy(args)
 
 if __name__ == '__main__':
-    DevToolCLI().cmdloop()
+    ServiceGenie().cmdloop()
