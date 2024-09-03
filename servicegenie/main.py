@@ -132,9 +132,16 @@ class DevToolCLI(cmd.Cmd):
         if not self.data:
             print("No containers stored.")
             return
-        self.data.clear()
-        self.save_data()
-        print("All container data removed.")
+        
+        response = input("Remove all stored container data? (y/n): ")
+        if response.lower() != 'y':
+            print("Operation cancelled.")
+            return
+        else:
+            self.data.clear()
+            self.save_data()
+            print("All container data removed.")
+            return
 
     def do_exit(self, arg):
         'Exit the CLI'
