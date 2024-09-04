@@ -18,7 +18,7 @@ import subprocess
 from datetime import datetime
 
 DATA_FILE = 'MaestroConfig.json'
-#! ADD CHECKS FOR TIME STAMPS! DOES NOT WORK ON CONFIGURE!
+
 class Maestro(cmd.Cmd):
     intro = 'Welcome to the Maestro CLI. Type help or ? to list commands.\n'
     prompt = '\033[95mMaestro>\033[0m '
@@ -29,8 +29,17 @@ class Maestro(cmd.Cmd):
 
     def load_data(self):
         if os.path.exists(DATA_FILE):
-            with open(DATA_FILE, 'r') as file:
-                return json.load(file)
+            print("Loading data from file...")
+            try:
+            # Try to open and parse the JSON file
+                with open(DATA_FILE, 'r') as file:
+                    return json.load(file)
+            except json.JSONDecodeError:
+                print(f"Error: The data file '{DATA_FILE}' is corrupted or contains invalid JSON. Configure Maestro again or add data manually.")
+                return {}
+            except Exception as e:
+                print(f"An unexpected error occurred while loading the data: {e}")
+                return {}
         else:
             print("No data file found. Starting with an empty data store.")
             return {}
@@ -77,7 +86,7 @@ class Maestro(cmd.Cmd):
         self.add_container(container_name, container_working_dir, workspace)
     
     def do_configure(self, arg):
-        'Configure ServiceGenie with a JSON file: configure'
+        'Configure Maestro with a JSON file: configure'
         file_path = os.path.expanduser(input("Enter the path to the configuration file: ").strip())
         if not file_path:
             print("Error: File path cannot be empty.")
@@ -87,8 +96,11 @@ class Maestro(cmd.Cmd):
                 with open(file_path, 'r') as file:
                     data = json.load(file)
                     self.data.update(data)
+                    # Add the current timestamp to all the containers
+                    for container_name in self.data:
+                        self.data[container_name]['last_updated'] = datetime.now().isoformat()
                     self.save_data()
-                    print("ServiceGenie configured successfully.")
+                    print("Maestro configured successfully.")
             except FileNotFoundError:
                 print("Error: File not found.")
             except json.JSONDecodeError:
@@ -133,11 +145,17 @@ class Maestro(cmd.Cmd):
         print(f"{'-'*40} {'-'*60} {'-'*10} {'-'*20}")
         
         for container_name, info in self.data.items():
-            workspace = info.get('workspace', '-')
+            workspace = info.get('workspace', 'UNKNOWN')
             status = self.check_container(container_name)
-            last_updated = (datetime.now() - datetime.fromisoformat(info.get('last_updated', '-'))).total_seconds() / 60
+            timestamp = info.get('last_updated', 'UNKNOWN')
 
+            if timestamp == "UNKNOWN":
+                print(f"{container_name:<40} {workspace:<60} {status:<10} {timestamp:<20}")
+                continue
+            
+            last_updated = (datetime.now() - datetime.fromisoformat(timestamp)).total_seconds() / 60
             updated = f"{int(last_updated)} minutes ago" if last_updated >= 1 else "Just now"
+
             print(f"{container_name:<40} {workspace:<60} {status:<10} {updated:<20}")
         
         print("\n")
@@ -211,7 +229,7 @@ class Maestro(cmd.Cmd):
             self.data[container_name]['last_updated'] = datetime.now().isoformat()
             self.save_data()
         else:
-            print(f"Error: Container \"{container_name}\" does not exist in ServiceGenie storage.")
+            print(f"Error: Container \"{container_name}\" does not exist in Maestro storage.")
     
     def do_copy(self, arg):
         'Copy a container\'s code: copy || copy CONTAINER_NAME_ONE, CONTAINER_NAME_TWO, ...'
@@ -238,7 +256,7 @@ class Maestro(cmd.Cmd):
                     self.copy_files(container_name, workspace)
                     self.update_timestamp(container_name)
                 else:
-                    print(f"Error: Container \"{container_name}\" does not exist in ServiceGenie storage.")
+                    print(f"Error: Container \"{container_name}\" does not exist in Maestro storage.")
 
     def do_c(self, args):
         'Copy a container\'s code: copy || copy CONTAINER_NAME_ONE, CONTAINER_NAME_TWO, ...'
