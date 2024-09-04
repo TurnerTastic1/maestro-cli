@@ -251,9 +251,11 @@ class Maestro(cmd.Cmd):
             for container_name in containers:
                 container_name = container_name.strip()
                 if container_name in self.data:
-                    workspace = self.data[container_name]['workspace']
+                    data = self.data[container_name]
+                    workspace = data.get('workspace', '-')
+                    container_working_dir = data.get('container_working_dir', '-')
                     print(f"Copying code to container: {container_name} from code workspace: {workspace}")
-                    self.copy_files(container_name, workspace)
+                    self.copy_files(container_name, container_working_dir, workspace)
                     self.update_timestamp(container_name)
                 else:
                     print(f"Error: Container \"{container_name}\" does not exist in Maestro storage.")
