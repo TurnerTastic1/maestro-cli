@@ -17,6 +17,8 @@ import os
 import subprocess
 from datetime import datetime
 
+from maestro import do_exit
+
 DATA_FILE = 'MaestroConfig.json'
 
 class Maestro(cmd.Cmd):
@@ -31,7 +33,7 @@ class Maestro(cmd.Cmd):
         if os.path.exists(DATA_FILE):
             print("Loading data from file...")
             try:
-            # Try to open and parse the JSON file
+                # Try to open and parse the JSON file
                 with open(DATA_FILE, 'r') as file:
                     return json.load(file)
             except json.JSONDecodeError:
@@ -203,8 +205,8 @@ class Maestro(cmd.Cmd):
             return
 
     def do_exit(self, arg):
-        'Exit the CLI'
-        return True
+        'Exit the CLI: exit' # ! having this help context will put the command in the help list
+        return do_exit(self, arg)
     
     def copy_files(self, container_name, container_working_dir, workspace):
         try:

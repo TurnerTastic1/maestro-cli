@@ -1,0 +1,7 @@
+{
+    "SpringBootDockerDemo_app": {
+        "container_working_dir": "app/",
+        "workspace": "~/workspace/LEARN/DOCKER/SpringBootDockerDemo",
+        "last_updated": "2024-09-04T17:12:46.887903"
+    }
+}
