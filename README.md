@@ -25,12 +25,6 @@ Github Releases
 
 #### Basic commands
 
-Add a container
-
-```sh
-Maestro> add
-```
-
 List tracked containers (list or ls)
 
 ```sh
@@ -46,19 +40,28 @@ another_container    ~/workspace/another_project                     (stopped)  
 Maestro>
 ```
 
+Copy code to a container (c or copy)
+
+```sh
+Maestro> c my_container
+Copying code to container: my_container from code workspace: ~/projects/my_code
+                            Successfully copied 40MB to my_container:/
+Maestro>
+```
+
 #### Configuration
 
 Configuring Maestro is simple. The easiest way is to provide a json file structured like the following:
 
 ```json
 {
-  "ContainerNameOne": {
-    "container_working_dir": "usr/src/app/",
-    "workspace": "~/workspace/repoOne"
+  "my_container": {
+    "container_working_dir": "",
+    "workspace": "~/projects/my_code"
   },
-  "ContainerNameTwo": {
+  "another_container": {
     "container_working_dir": "usr/src/app/",
-    "workspace": "~/workspace/repoTwo"
+    "workspace": "~/workspace/another_project"
   }
   ...
 }
