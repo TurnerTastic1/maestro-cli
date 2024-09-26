@@ -1,6 +1,6 @@
 # Maestro
 
-<img src="images/maestro.png" alt="Maestro CLI" width="500" />
+<img src="images/MaestroLogo.jpeg" alt="Maestro CLI" width="500" />
 
 ## Overview
 
