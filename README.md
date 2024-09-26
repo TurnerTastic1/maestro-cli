@@ -4,7 +4,7 @@
 
 ## Overview
 
-Maestro is a development tool designed to simplify the management and monitoring of large quantities of containerized microservices. It provides functionalities for adding, listing, and updating container code, as well as checking container statuses.
+Maestro is a REPL development tool designed to simplify the management and monitoring of large quantities of containerized microservices. It provides functionalities for adding, listing, and updating container code, as well as checking container statuses.
 
 Supported microservice frameworks:
 

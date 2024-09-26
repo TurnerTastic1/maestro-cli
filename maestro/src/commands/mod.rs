@@ -1,7 +1,9 @@
-pub mod ping;
-pub mod exit;
+mod ping;
+mod exit;
+mod config;
 
 use clap::Parser;
+use crate::commands::config::handle_config;
 use crate::commands::ping::handle_ping;
 use crate::commands::exit::handle_exit;
 
@@ -16,6 +18,7 @@ pub struct Cli {
 pub enum Commands {
     Ping,
     Exit,
+    Config,
 }
 
 pub fn respond(line: &str) -> Result<bool, String> {
@@ -25,5 +28,6 @@ pub fn respond(line: &str) -> Result<bool, String> {
     match cli.command {
         Commands::Ping => handle_ping(),
         Commands::Exit => handle_exit(),
+        Commands::Config => handle_config(),
     }
 }
