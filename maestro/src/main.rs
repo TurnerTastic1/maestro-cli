@@ -1,5 +1,4 @@
 mod commands;
-mod core;
 mod utils;
 
 fn main() -> Result<(), String> {
