@@ -1,7 +1,5 @@
-use std::fs;
-use std::path::PathBuf;
 use inquire::Text;
-use maestro_core::core::config::store::save_config;
+use maestro_core::core::config::store::save_user_config_file;
 
 pub fn handle_config() -> Result<bool, String> {
     // Prompt for the configuration file path
@@ -12,11 +10,7 @@ pub fn handle_config() -> Result<bool, String> {
 
     match config_file_path {
         Ok(path) => {
-            // Convert the path to an absolute path
-            let absolute_path = fs::canonicalize(PathBuf::from(path.to_string()))
-                .map_err(|err| format!("Failed to canonicalize path '{}': {}\nEnsure the file exists", path, err))?;
-
-            match save_config(absolute_path.to_str().unwrap().to_string()) {
+            match save_user_config_file(path) {
                 Ok(path) => {
                     println!("Configuration file set to: {}", path);
                 }
