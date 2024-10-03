@@ -22,6 +22,7 @@ pub enum Commands {
     Exit,
     Config,
     List,
+    Ls,
 }
 
 pub fn respond(line: &str) -> Result<bool, String> {
@@ -33,5 +34,6 @@ pub fn respond(line: &str) -> Result<bool, String> {
         Commands::Exit => handle_exit(),
         Commands::Config => handle_config(),
         Commands::List => handle_list(),
+        Commands::Ls => handle_list(),
     }
 }

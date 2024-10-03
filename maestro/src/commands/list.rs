@@ -1,3 +1,4 @@
+use colored::Colorize;
 use maestro_core::core::config::store::load_config;
 
 pub fn handle_list() -> Result<bool, String> {
@@ -5,9 +6,10 @@ pub fn handle_list() -> Result<bool, String> {
 
     match load_result {
         Ok(maestro) => {
-            println!("Projects:");
+            println!("{:<20} {:<40} {:<10}", "Name".bold(), "Description".bold(), "Status".bold());
+            println!("{} {} {}", "-".repeat(20), "-".repeat(40), "-".repeat(10));
             for workspace in &maestro.workspaces {
-                println!("  - {}", workspace.name);
+                println!("{:<20} {:<40} {:<10}", workspace.name, workspace.description, "Active");
             }
             Ok(false)
         }
