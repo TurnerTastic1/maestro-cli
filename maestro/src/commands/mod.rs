@@ -1,11 +1,13 @@
 mod ping;
 mod exit;
 mod config;
+mod list;
 
 use clap::Parser;
 use crate::commands::config::handle_config;
 use crate::commands::ping::handle_ping;
 use crate::commands::exit::handle_exit;
+use crate::commands::list::handle_list;
 
 #[derive(Debug, Parser)]
 #[command(multicall = true)]
@@ -19,6 +21,7 @@ pub enum Commands {
     Ping,
     Exit,
     Config,
+    List,
 }
 
 pub fn respond(line: &str) -> Result<bool, String> {
@@ -29,5 +32,6 @@ pub fn respond(line: &str) -> Result<bool, String> {
         Commands::Ping => handle_ping(),
         Commands::Exit => handle_exit(),
         Commands::Config => handle_config(),
+        Commands::List => handle_list(),
     }
 }
